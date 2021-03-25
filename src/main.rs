@@ -9,7 +9,7 @@ impl Todo {
      * The function here takes the mutable self variable and a key.
      * The & means the reference to the variable meaning if we change something
      * the change needs to be global or the address where the OG variable is stored.
-     * The above concept is known as BORROW in Rust.
+     * The below concept is known as BORROW in Rust.
      */
     fn insert(&mut self, key: String) {
         self.map.insert(key, false);
@@ -45,13 +45,11 @@ impl Todo {
      */
 
     /**
-     * First we iterate over each line in the .txt file and
-     * then we split lines by \t character.
-     * Then using collect::<Vec<&str>>() we collect the data as in
-     * the given format. Then we map first and second variable of
-     * the vector and change their type as string and bool as in
-     * the Hashmap and then we unwrap it and store it to the Hashmap.
-     * Once it gets done we return the map of type Todo.
+     * The new() uses serde crate for reading json file.
+     * then it reads using from_reader() and then maps
+     * the contents as map of Todo.
+     * If somehow the file is not found or encountered
+     * we show a panic error.
      */
 
     fn new() -> Result<Todo, std::io::Error> {
@@ -69,6 +67,12 @@ impl Todo {
             Err(e) => panic!("An error occurred: {}", e),
         }
     }
+
+    /**
+     * The complete function takes the key(task) and then
+     * changes or flips the complete state of that particular
+     * task.
+     */
 
     fn complete(&mut self, key: &String) -> Option<()> {
         match self.map.get_mut(key) {

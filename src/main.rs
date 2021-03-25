@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::io::Read;
+use std::str::FromStr;
 
 struct Todo {
     map: HashMap<String, bool>,
@@ -24,10 +26,50 @@ impl Todo {
     fn save(self) -> Result<(), std::io::Error> {
         let mut content = String::new();
         for (k, v) in self.map {
-            let record: str = format!("{}\t{}\n", k, v);
+            let record = format!("{}\t{}\n", k, v);
             content.push_str(&record);
         }
         return std::fs::write("db.txt", content);
+    }
+
+    /**
+     * An alternative approach for below function.
+     *for entries in content.lines() {
+        // split and bind values
+        let mut values = entries.split('\t');
+        let key = values.next().expect("No Key");
+        let val = values.next().expect("No Value");
+        // insert them into HashMap
+        map.insert(String::from(key), bool::from_str(val).unwrap());
+    }
+     */
+
+    /**
+     * First we iterate over each line in the .txt file and
+     * then we split lines by \t character.
+     * Then using collect::<Vec<&str>>() we collect the data as in
+     * the given format. Then we map first and second variable of
+     * the vector and change their type as string and bool as in
+     * the Hashmap and then we unwrap it and store it to the Hashmap.
+     * Once it gets done we return the map of type Todo.
+     */
+
+    fn new() -> Result<Todo, std::io::Error> {
+        let mut f = std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .read(true)
+            .open("db.txt")?;
+
+        let mut content = String::new();
+        f.read_to_string(&mut content)?;
+        let map: HashMap<String, bool> = content
+            .lines()
+            .map(|line| line.splitn(2, '\t').collect::<Vec<&str>>())
+            .map(|v| (v[0], v[1]))
+            .map(|(k, v)| (String::from(k), bool::from_str(v).unwrap()))
+            .collect();
+        return Ok(Todo { map });
     }
 }
 
@@ -44,6 +86,8 @@ fn main() {
 
     let item = std::env::args().nth(2).expect("Please specify an item");
 
+    let mut todo = Todo::new().expect("Initialization of db failed somehow");
+
     let mut todo = Todo {
         map: HashMap::new(),
     };
@@ -55,6 +99,4 @@ fn main() {
             Err(why) => println!("An error occurred: {}", why),
         }
     }
-
-    println!("{:?} {:?}", action, item);
 }

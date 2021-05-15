@@ -88,6 +88,7 @@ fn main() {
      * and then we use nth() to get the args by indices. The args().nth(0)
      * is the program itself and that's why we start from index 1.
      */
+    //println!("Hello World!");
 
     let action = std::env::args()
         .nth(1)
